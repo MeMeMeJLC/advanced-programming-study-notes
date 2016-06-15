@@ -595,132 +595,394 @@ EXTRACT CLASS
 ***Dispensibles***
 *Comments
 1. how do you know it is that bad smell, and how is it solved?
-
+	- methods shouldnt be filled with explanatory code. Means the code isnt written self explanatory enough.
+	
+	-- if  a comment is intended to explain a complex expression, then it should be split into understandable subexpressions using EXTRACT VARIABLE
+	- If a comment explains a section of code, this section can be turned into a separate method via EXTRACT METHOD.
+	- If a method has already been extracted, but comments are still necessary to explain what the method does, RENAME METHOD 
+	- if you need to assert rules about a state that is necessary for the system to work, use INTRODUCE ASSERTION
 	
 2. what does it look like?
+	you see explanatory comments in methods
 
 
 3. how does removing it improve reusability?
-
+	Code becomes more intuitive. Easier to understand how the code works.
 
 4. what is the step by step to remove the bad smell?
+	EXTRACT VARIABLE=
+	1. insert a new line before the relevant expression and declare a new var there. Assign part of the complex expression to this var.
+	2. Replace that part of the expression with the new var.
+	3. Repeat the process for all complex parts.
+	
+	Extract method = 
+		1. create new method with self evident name. 
+		2. copy relevant code to new method, and delete from old, put a call to new method instead.
+		3. pass any vars declare prior to extracted code as parameters of new method.
+		4. return the value if required in main method.
+		
+	RENAME METHOD=
+	1. See whether method defined in a superclass or subclass. If so repeat these step for all.
+	2. Create a new method with a new name. copy the code of the old method to it. Delete all the code in the old method, and instead of it, insert a call for the new method.
+	3. Find all references to the old method and replace them with references to the new one.
+	4. delete the old method. If the old method is part of a public interface, instead just mark it as deprecated and leave it.
+	
+	INTRODUCE ASSERTION= 
+	 if condition is assumed add assertion to make sure true.
+	adding assertion should not change the programs behaviour
+	Dont overdo it. Only if failing assertion will break code.
+
 
 *Duplicate Code
 1. how do you know it is that bad smell, and how is it solved?
+	- code pieces look the same in multiple places.
+	
+	- if code used in multiple places in same class use EXTRACT METHOD and place calls for the new method in both places.
+	- if same code is in 2 subclasses of same level
+		- use EXTRACT METHOD for both classes, followed by PULL UP FIELD
+		- if duplicate code in constructor PULL UP CONSTRUCTOR BODY
+		- if duplicate code is similar but not identical use FORM TEMPLATE METHOD
+		- if two methods do the same thing but use different allgorithms, select the best algortithm and apply the SUBSTITUE ALGORITHM
+	- if duplicate code found in 2 separate classes
+		- if the classes are not part of a hierarchy use EXTRACT SUPERCLASS=
+		- if difficult to create superclass use EXTRACT CLASS in one class, and use the new one in the other.
+	- if a large number of conditional expressions are present and perform the same code merge methods into asingle condition using CONSOLIDATE CONDITIONAL EXPRESSION and use EXTRACT METHOD to place the condition in a separate method with easy to understand name.
+	- if the same code is performed in all branches of a conditional expression place the identical code outside the condition tree by using CONSOLIDATE DUPLICATE CONDITIONAL FRAGMENTS
+		
 
 	
 2. what does it look like?
+	Identical code fragments at different places
 
 
 3. how does removing it improve reusability?
-
+	simplifies code structure, makes it simpler
+	easier to maintain and support
 
 4. what is the step by step to remove the bad smell?
-
+	Extract method = 
+		1. create new method with self evident name. 
+		2. copy relevant code to new method, and delete from old, put a call to new method instead.
+		3. pass any vars declare prior to extracted code as parameters of new method.
+		4. return the value if required in main method.
+		
+	PULL UP FIELD=
+		1. make sure the fields are used fo the same needs in subclasses
+		2. if the fields have different names give them the same name and replace all references to the fields in existing code.
+		3. create a field with the same name in the superclass. Note that if the fields were private, the superclass field should be protected.
+		4. remove the fields from the subclasses
+		
+	PULL UP CONSTRUCTOR BODY=
+		1. create constructor in a superclass
+		2. Extract common code from the beginning of the constructor of each subclass to the superclass constructor. Before doing so try to move as much common code as possible to the beginning to the constructor.
+		3. Place the call for the superclass constructor in the first line in the subclass constructors.
+		
+	FORM TEMPLATE METHOD=
+		1. split algorithms in the subclasses into their constituent parts described in separate methods, use EXTRACT Method
+		2. The resulting methods that are identical for all subclasses can be moved to a superclass via PULL UP METHOD= 
+			1. investigate similar methods in superclasses. if not identical tformat  then to match each other.
+			2. if methods use a different set of params put the params in the form that you want to see in the superclass
+			3. copy the method to the superclass. here you may find that the method code uses fields and methods that exist only in subclasses and therefore are not available in the superclass. To solve this PULL UP FIELD to create getters and setters in the subclasses, then declare these getters abstractly in the superclass, or use PULL UP METHOD
+			4. Remove the methods from the subclasses
+			5. check the locations in which the method is called. in some places you may be able to replace use of a subclass with the superclass.
+		3. Non similar methods can be given consistent names via RENAME METHOD=
+			1. See whether method defined in a superclass or subclass. If so repeat these step for all.
+			2. Create a new method with a new name. copy the code of the old method to it. Delete all the code in the old method, and instead of it, insert a call for the new method.
+			3. Find all references to the old method and replace them with references to the new one.
+			4. delete the old method. If the old method is part of a public interface, instead just mark it as deprecated and leave it.
+		4. Move the signatures of non similar methods to a supercalss as abstract ones by using PULL UP METHOD. Leave there implementations in the subclass.
+		5. And finally pull up the main method of the algorithm to the superclass. Now it should work with the method steps described in the superclass, both real and abstract.
+		
+		SUBSTITUTE ALGORITHM=
+		1. make sure that you have simplified the existing algorithm as much as possible. Move unimportant code to other methods using EXTRACT METHOD. The fewer moving parts the easier.
+		2. Create new algorithm in a new method. Replace the old algorithm with the new one and start testing the product.
+		3. If the results do not match, return to the old algorithm. Indentify cause of difference.
+		4. When all tests are successful, delete old algorithm.
+		
+		EXTRACT SUPERCLASS=
+		1. create an abstract superclass
+		2. use PULL UP FIELD=
+			1. make sure the fields are used fo the same needs in subclasses
+			2. if the fields have different names give them the same name and replace all references to the fields in existing code.
+			3. create a field with the same name in the superclass. Note that if the fields were private, the superclass field should be protected.
+			4. remove the fields from the subclasses
+		use PULL UP METHOD=
+			1. investigate similar methods in superclasses. if not identical tformat  then to match each other.
+			2. if methods use a different set of params put the params in the form that you want to see in the superclass
+			3. copy the method to the superclass. here you may find that the method code uses fields and methods that exist only in subclasses and therefore are not available in the superclass. To solve this PULL UP FIELD to create getters and setters in the subclasses, then declare these getters abstractly in the superclass, or use PULL UP METHOD
+			4. Remove the methods from the subclasses
+			5. check the locations in which the method is called. in some places you may be able to replace use of a subclass with the superclass.
+		use PULL UP CONSTRUCTOR BODY=
+			1. create constructor in a superclass
+			2. Extract common code from the beginning of the constructor of each subclass to the superclass constructor. Before doing so try to move as much common code as possible to the beginning to the constructor.
+			3. Place the call for the superclass constructor in the first line in the subclass constructors.
+		to move the common functionality to a superclass. Start with the fields, since in addition to the common fields you will need to move the fields that are used in the common methods.
+		3. Look for places in the client code where use of subclass can be replaced with your new class (such as in type declarations)
+		
+		EXTRACT CLASS 
+		1. Create a new class to contain relevant functionality
+		2. Create relationship between old class and new.
+		3. Move Field - 
+			1. recreate the same field with access methods in new class
+			2. Create a get method to get the field in both classes.
+			3. Replace all references to the old field with calls to the methods in the new class.
+			4. delete field in original class
+		Move method - 
+			1. verify all features used by old method in its class. May need to move them as well. And move any other methods that rely on the feature. Make sure method is not declared in superclasses or sub classes, if is don't move
+			2. declare the new method in the recipient class, mayb ewith more appropriate name given its new location
+			3. Make sure there ways to return the appropriate object. Turn old method into a reference to the new method.
+			4. Can you delete the old method entirely? If so, place a reference to the new method in all places that use the old one
+		After moving does class need renaming to increase clarity. 
+		4. Consider whether you want the new class accessible publicly by the client or privately through the subclass.
+		
+		CONSOLIDATE CONDITIONAL EXPRESSION=
+		Before refactoring make sure conditionals do not have any side effects.
+		1. Consolidate conditionals in a single expression by using "and" and "or"
+			-nested conditionals using "and"
+			- consecutive conditionals using "or"
+		2. Perform EXTRACT METHOD on the operator conditions and give the method a name that reflects the expressions purpose.
+		
+		CONSOLIDATE DUPLICATE CONDITIONAL FRAGMENTS=
+		1. if the duplicate is at the begining of the conditional branches move the code to a place before the conditional
+		2. if the code is executed at the end of the branches, place it after the conditional
+		3. if the duplicate code is randomly situated inside the branches, first try to move it to the beginning or end of the branch. Put it where it works best.
+		4. If duplicate code longer than one line try using EXTRACT METHOD.
+			
 *Lazy Class
 1. how do you know it is that bad smell, and how is it solved?
+	-class doesnt do enough to earn your attention, then it should be deleted.
+	
+	- components that are near useless should be given the INLINE CLASS treatment
+	- for subclasses with few functions try COLLAPSE HIERARCY
 
 	
 2. what does it look like?
-
+	Very small class. Not doing much. Could more easily fit the functions within another class.
 
 3. how does removing it improve reusability?
-
+	easier maintainance and smaller code
 
 4. what is the step by step to remove the bad smell?
+	INLINE CLASS=
+	1. in recipient class create the public fields and methods present in the donor class. Methods should refer to the equivalentmethods of the donor class.
+	2. replace all references to the donor class references to the fields and methods of the recipient class.
+	3. Now test the program and make sure that no errors have been added. If tests show that everything is working A-OK, start using MOVE METHOD and MOVE FIELD to completely transplant all functionality to the recipient class from the original one. Continue until original class is empty.
+	4. Delete original class.
+	
+	COLLAPSE HIERARCY=
+	1. choose which  class is easier to to get rid of, if subclass PULL UP FIELD and PULL UP METHOD, if superclass PUSH DOWN FIELD AND PUSH DOWN Method
+	2. replace all uses of the class that you are deleting with the class to which the fields and methods are migrated.
+	3. delete the empty class
+
 
 *Data Class
 1. how do you know it is that bad smell, and how is it solved?
+	- class only contains fields, getters and setters. No real functions run on the fields. They are just dumb data holders. They cannot operate independantly on their own data.
+	
+	- if a class contains public fields use ENCAPSULATE FIELD to hide them and reuire getters and setters to access.
+	-use ENCAPSULATE COLLECTION for data stored in collections (such as lists)
+	- Review the client code used by the class. If any functionality would be better in the data class itself then MOVE METHOD and EXTRACT METHOD to move the funcationality to the data class.
+	- after class has been filled with well thought out methods, may want to get rid of the old methods for data access that give overly broad access to the class data. For this REMOVE SETTING METHOD and HIDE METHOD may be useful.
 
 	
 2. what does it look like?
-
+	class only contains data fields, getters and setters
 
 3. how does removing it improve reusability?
-
+	Operations on particular data is now in one place. Better modularity for reuse.
 
 4. what is the step by step to remove the bad smell?
+	ENCAPSULATE FIELD=
+	1. create a getter (maybe setter) for the field. 
+	2. Find all direct invocations of the field and replace them with getter and setter calls
+	
+	ENCAPSULATE COLLECTION=
+	1. create methods for adding and deleting collection elements. Must accept colection elements in their params.
+	2. Assign an empty collection to the field as the initial value if this is not done in the class constructor
+	3. Find the calls of the collection field setter. Chnage the setter so that it uses operations for adding and deleting elements, or make these operations call client code.
+	4. fin dall calls of the collection getter. change code so that it uses your new methods for adding and deleting elements from the collection.
+	5. Change the getter so that it returns a read only representation of the collection.
+	6. inspect the client code that uses the collection for code that woul dlook better inside the collection class itself. 
+	
+	REMOVE SETTING METHOD=
+	1. Value of a field should be changeable only in the constructor. If the constructor does not contain a param for setting the value, add one.
+	2. Find all setter calls. If setter call right after a call for the constructor of the currect class, move its argument to the construtor call and remove the setter. Replace setter calls in the constructor with direct access to the field.
+	3. Delte the setter.
+	
+
 
 *Dead Code
 1. how do you know it is that bad smell, and how is it solved?
-
+	- a var, parameter, field, method or class is no longer used.
+	
+	- delete unused code
+	- in the case of an unnecessary class use INLINE CLASS or COLLAPSE HIERARCHY.
+	- to remove unneeded params use REMOVE PARAMS
 	
 2. what does it look like?
-
+	Unused code lying around
 
 3. how does removing it improve reusability?
-
+	easier to rread with smaller code
+	no temptation to maintain unused code. can't reuse code that never gets used.
 
 4. what is the step by step to remove the bad smell?
 
 *Speculative Granularity
 1. how do you know it is that bad smell, and how is it solved?
-
+	- code is created just in case of future features that never get implemented.
+	
+	- unused abstract classes, COLLAPSE HIERARCHY
+	- unnecessary delegation of functionality to another class eliminated via INLINE Class
+	- unused methods = INLINE METHOD to get rid of them
+	- methods with unused params should be given a look with the help of REMOVE PARAM
+	- unused fields can be simply deleted
 	
 2. what does it look like?
-
+	Code is there for future functionality, but functionality doesnt currently exist 
 
 3. how does removing it improve reusability?
-
+	slimmer code
+	dont need to support code that isnt even implemented
+	
 
 4. what is the step by step to remove the bad smell?
+	INLINE METHOD=
+	1.  make sure that the method is not redefined in subclasses. if method is redefined refrain from this technique.
+	2. find all calls to the method, replace these calls with the content of te method.
+	3. delete method
+	
+	REMOVE PARAM to eliminate now unused param=
+		1. see if method defined in superclass or subclass. If param is used dont refactor using this.
+		2. Create new method by copying old one and delete relevant param from it. Replace code with of old method with a call to the new one.
+		3. Find all references to old method and replace them with references to the new method.
+		4. Delete the old method. Dont perform this if old method is part of a public interface, just marks as deprecated.
 
 ***Couplers***
 *Feature Envy
 1. how do you know it is that bad smell, and how is it solved?
-
+	- Method accesses the data of another object more than its own data.
+	
+	- if things change at the same time, you should keep them in the same place.
+	- if a method clearly should be moved to another place MOVE Method
+	- if only part of a method accesses the data of another object, use EXTRACT METHOD to move the part
+	- If a method uses data frm many classes work out which class it uses most from. Then place the method in this class along with the other data.
 	
 2. what does it look like?
 
 
 3. how does removing it improve reusability?
-
+	less code duplication, code is in  a central place
+	better modularity. data and data handling happen in the same place
+	
 
 4. what is the step by step to remove the bad smell?
+
 
 *Inappropriate Intimacy
 1. how do you know it is that bad smell, and how is it solved?
 
+	- one class uses the internal fields and methods of another class
+	
+	- simplest is to MOVE METHOD and MOVE FIELD. But only works if the first class truly does not need these parts.
+	- Another solution is to EXTRACT CLASS and HIDE DELEGATE on the class to make the code relations official
+	- if the classes are mutually independant use CHANGE BIDIRECTIONAL ASSOCIATION TO UNIDIRECTIONAL
+	- if intimacy is between subclass and superclass consider REPLACE DELEGATION WITH INHERITANCE
 	
 2. what does it look like?
 
 
 3. how does removing it improve reusability?
+	improves modularity and code organisation
 
 
 4. what is the step by step to remove the bad smell?
+	HIDE DELEGATE=
+	1. for each method of the deleate class called by the client, create a method in the server class that delegates the call to the delegate class.
+	2. change the client code so that it calls the methods of the server class.
+	3. if your changes free the client from needing the delegate class you can remove the access method to the delegate class from the server class.
+	
+	CHANGE BIDIRECTIONAL ASSOCIATION TO UNIDIRECTIONAL=
+	1. make sure that one of the following is true for your classes:
+		-no association is used
+		-there is another way to get the associated object, such as through db query
+		-associated object can be passed as an argument to the methods that use it
+	2. depending on your situation use of a field that contains an association with another object should be replaced by a param or method call for getting the object in a different way.
+	3. delete the code that assigns the associated object to the field
+	4. delete the now unused field
+
+	REPLACE DELEGATION WITH INHERITANCE=
+	1. make the class a subclass of the delegate class
+	2. place the current object in a field containing a reference to the delegate object
+	3. delete the methods with simple delegation one by one. If their names were different use RENAME METHOD to give all methods a single name.
+	4. replace all references to the delegate field with references to the current object
+	5. remove the delegate field
 
 *Message chains
 1. how do you know it is that bad smell, and how is it solved?
+	-there is a chain of object requests. Means that the client is dependent on navigation along the class structure. ANy changes in relationships require modifying the client.
+	
+	- to delete a message chain use HIDE DELEGATE 
+	- sometimes better to think of why the end object is being used. Perhaps it would make sense to use EXTRACT METHOD for this functionality and move it to the begining of the chain by using MOVE METHOD.
 
 	
 2. what does it look like?
-
+	objectOne->doFunctionOne()->doFunctionTwo()->doFunctionThree()
 
 3. how does removing it improve reusability?
-
+	reduces dependency between classes, more modularity
 
 4. what is the step by step to remove the bad smell?
+	HIDE DELEGATE=
+	1. for each method of the deleate class called by the client, create a method in the server class that delegates the call to the delegate class.
+	2. change the client code so that it calls the methods of the server class.
+	3. if your changes free the client from needing the delegate class you can remove the access method to the delegate class from the server class.
 
 *Middleman
 1. how do you know it is that bad smell, and how is it solved?
+	- class performs only one action and delegates work to another class, why does it exist?
+	
+	- If most of a methods classes delegate to another class use REMOVE MIDDLEMAN
+	
+2. what does it look like?
+
+
+3. how does removing it improve reusability?
+	better modularity, functions are performed in one place.
+
+4. what is the step by step to remove the bad smell?
+	REMOVE MIDDLEMAN=
+	1. create a getter for accessing the delegate class object from the server class object
+	2. replace calls to delegating methods in the server class with direct calls for the methods in the delegate class.
+
+
+*Incomplete Library Class1. 
+how do you know it is that bad smell, and how is it solved?
+	- changing library not possible because it is read-only
+	
+	- introduce a few methods to a library class, INTRODUCE FOREIGN METHOD
+	- for big changes in a class library use INTRODUCE LOCAL EXTENSION
 
 	
 2. what does it look like?
 
 
 3. how does removing it improve reusability?
+	can keep using old library rather than having to create a new one for the new functionality. Dont have to rebuild the whole thing, just piggy back off old one.
 
 
 4. what is the step by step to remove the bad smell?
-
-*Incomplete Library Class1. how do you know it is that bad smell, and how is it solved?
-
+	INTRODUCE FOREIGN METHOD=
+	1. create a new method in the client class
+	2. in this method create a param to which the object of the utility class will be pass. If this object can be obtained from the client class you do not have to create such a param.
+	3. extract the relevant code fragments to this method and replace them with method calls.
+	4. be sure to leave the foreign method tage in the comments for the method along with the advice to place this method in a utility class if such becomes possible later. This will make it easier to understand why this method is located in this particular class for those who will be maintaining the software in the future.
 	
-2. what does it look like?
-
-
-3. how does removing it improve reusability?
-
-
-4. what is the step by step to remove the bad smell?
+	INTRODUCE LOCAL EXTENSION=
+	1. create a new extension class:
+		Option A: make it a child of the utility class
+		Option B: if you have decided to make a wrapper, create a field in it for storing the utility class object to which delegation will be made. When using this option, you will need to also create methods that repeat the public methods of the utility class and contain simple delegation to the methods of the utility object.
+	2. create a constructor that uses the params of the constructor of the utility class
+	3. also create an alternative converting constructor that takes only the object of the original class in its params. This will help to substitute the extension for the objects of the original class.
+	4. create new extended methods in the class. Move foreign methods from other classes to this class or else delete the foreign methods if their functionality is already  present in the extension
+	5. replace use of the utility class with the new extension class in places where its functionality is needed.
