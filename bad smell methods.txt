@@ -1,0 +1,297 @@
+bad smell methods
+
+ADD PARAM=
+	1. Set whether this method is defined in a superclass or subclasses, if so need to repeats for each place method is used.
+	2. Create new method by copying the old one and add necessary param to it. Replace code for old method with a call to the new method. You can plug in any value to the new param.
+	3. Find all references to the old method and replace them with references to the new method
+	4. Delete old method. If part of an interface it cant be deleted but instead mark as "deprecated".
+	
+CHANGE BIDIRECTIONAL ASSOCIATION TO UNIDIRECTIONAL=
+	1. make sure that one of the following is true for your classes:
+		-no association is used
+		-there is another way to get the associated object, such as through db query
+		-associated object can be passed as an argument to the methods that use it
+	2. depending on your situation use of a field that contains an association with another object should be replaced by a param or method call for getting the object in a different way.
+	3. delete the code that assigns the associated object to the field
+	4. delete the now unused field
+	
+COLLAPSE HIERARCHY=
+	1. choose which  class is easier to to get rid of, if subclass PULL UP FIELD and PULL UP METHOD, if superclass PUSH DOWN FIELD AND PUSH DOWN Method
+	2. replace all uses of the class that you are deleting with the class to which the fields and methods are migrated.
+	3. delete the empty class
+	
+CONSOLIDATE CONDITIONAL EXPRESSION=
+	Before refactoring make sure conditionals do not have any side effects.
+	1. Consolidate conditionals in a single expression by using "and" and "or"
+		-nested conditionals using "and"
+		- consecutive conditionals using "or"
+	2. Perform EXTRACT METHOD on the operator conditions and give the method a name that reflects the expressions purpose.
+
+CONSOLIDATE DUPLICATE CONDITIONAL FRAGMENTS=
+	1. if the duplicate is at the begining of the conditional branches move the code to a place before the conditional
+	2. if the code is executed at the end of the branches, place it after the conditional
+	3. if the duplicate code is randomly situated inside the branches, first try to move it to the beginning or end of the branch. Put it where it works best.
+	4. If duplicate code longer than one line try using EXTRACT METHOD.
+
+DECOMPOSE CONDITIONAL =
+	1. Extract conditional to separate method via Extract Method.
+	2. Repeat process for the then / else blocks.
+
+ENCAPSULATE COLLECTION=
+	1. create methods for adding and deleting collection elements. Must accept colection elements in their params.
+	2. Assign an empty collection to the field as the initial value if this is not done in the class constructor
+	3. Find the calls of the collection field setter. Chnage the setter so that it uses operations for adding and deleting elements, or make these operations call client code.
+	4. fin dall calls of the collection getter. change code so that it uses your new methods for adding and deleting elements from the collection.
+	5. Change the getter so that it returns a read only representation of the collection.
+	6. inspect the client code that uses the collection for code that woul dlook better inside the collection class itself. 
+	
+ENCAPSULATE FIELD=
+	1. create a getter (maybe setter) for the field. 
+	2. Find all direct invocations of the field and replace them with getter and setter calls
+	
+EXTRACT CLASS =
+	1. Create a new class to contain relevant functionality
+	2. Create relationship between old class and new.
+	3. MOVE FIELD =
+	   MOVE METHOD =
+	After moving does class need renaming to increase clarity. 
+	4. Consider whether you want the new class accessible publicly by the client or privately through the subclass.	
+	
+EXTRACT INTERFACE=
+	1. Create empty interface
+	2. Declare common operations in the interface
+	3. Decalre the nessary classes as implementing the interface
+	4. Change type declarations in the client code to use the new interface.
+	
+EXTRACT METHOD = 
+	1. create new method with self evident name. 
+	2. copy relevant code to new method, and delete from old, put a call to new method instead.
+	3. pass any vars declare prior to extracted code as parameters of new method.
+	4. return the value if required in main method.
+
+EXTRACT SUBCLASS=
+	1. create new subclass from class of interest
+	2. if you need additional data to create objects from subclass create constructor and add params to it. Call the constructors parent implementation
+	3. Find all class to the constructor of the parent class. When functionalit yof the a subclass is necessary replace parent constructor with the subclass constructor.
+	4. Move neccessary methods and fields from parent class to subclass via
+		PUSH DOWN METHOD=
+		PUSH DOWN FIELD=.
+	Move methods first , so the field is accessible the whole time, first in parent class then after in the subclass itself after move is complete.
+	5. Find old fields controlling choice of functionality and delte fields, and use polymorphism instead. eg: Car class had isElectricCar, and refuel() depends on it to determine whether to fill with gas or electricity. Instead isElectricCar is removed and instead Car and ElectricCar classes have their own implementations of refuel() method.
+
+EXTRACT SUPERCLASS=
+	1. create an abstract superclass
+	2. use PULL UP FIELD=
+	use PULL UP METHOD=
+	use PULL UP CONSTRUCTOR BODY=
+	to move the common functionality to a superclass. Start with the fields, since in addition to the common fields you will need to move the fields that are used in the common methods.
+	3. Look for places in the client code where use of subclass can be replaced with your new class (such as in type declarations)	
+
+EXTRACT VARIABLE=
+	1. insert a new line before the relevant expression and declare a new var there. Assign part of the complex expression to this var.
+	2. Replace that part of the expression with the new var.
+	3. Repeat the process for all complex parts.
+	
+FORM TEMPLATE METHOD=
+	1. split algorithms in the subclasses into their constituent parts described in separate methods, use EXTRACT METHOD
+	2. The resulting methods that are identical for all subclasses can be moved to a superclass via PULL UP METHOD= 
+	3. Non similar methods can be given consistent names via RENAME METHOD=
+	4. Move the signatures of non similar methods to a supercalss as abstract ones by using PULL UP METHOD. Leave there implementations in the subclass.
+	5. And finally pull up the main method of the algorithm to the superclass. Now it should work with the method steps described in the superclass, both real and abstract.
+	
+HIDE DELEGATE=
+	1. for each method of the deleate class called by the client, create a method in the server class that delegates the call to the delegate class.
+	2. change the client code so that it calls the methods of the server class.
+	3. if your changes free the client from needing the delegate class you can remove the access method to the delegate class from the server class.
+	
+HIDE METHOD=
+	1. Regularly try to find methods that can be made private. Static code analysis and good unit test coverage can offer a big leg up.
+	2. Make each method as private as possible.
+
+INLINE CLASS=
+	1. in recipient class create the public fields and methods present in the donor class. Methods should refer to the equivalentmethods of the donor class.
+	2. replace all references to the donor class references to the fields and methods of the recipient class.
+	3. Now test the program and make sure that no errors have been added. If tests show that everything is working A-OK, start using MOVE METHOD and MOVE FIELD to completely transplant all functionality to the recipient class from the original one. Continue until original class is empty.
+	4. Delete original class.	
+	
+INLINE METHOD=
+	1.  make sure that the method is not redefined in subclasses. if method is redefined refrain from this technique.
+	2. find all calls to the method, replace these calls with the content of te method.
+	3. delete method
+	
+INTRODUCE ASSERTION=
+	 if condition is assumed add assertion to make sure true.
+	adding assertion should not change the programs behaviour
+	Dont overdo it. Only if failing assertion will break code.
+	
+INTRODUCE FOREIGN METHOD=
+	1. create a new method in the client class
+	2. in this method create a param to which the object of the utility class will be pass. If this object can be obtained from the client class you do not have to create such a param.
+	3. extract the relevant code fragments to this method and replace them with method calls.
+	4. be sure to leave the foreign method tage in the comments for the method along with the advice to place this method in a utility class if such becomes possible later. This will make it easier to understand why this method is located in this particular class for those who will be maintaining the software in the future.
+
+INTRODUCE LOCAL EXTENSION=
+	1. create a new extension class:
+		Option A: make it a child of the utility class
+		Option B: if you have decided to make a wrapper, create a field in it for storing the utility class object to which delegation will be made. When using this option, you will need to also create methods that repeat the public methods of the utility class and contain simple delegation to the methods of the utility object.
+	2. create a constructor that uses the params of the constructor of the utility class
+	3. also create an alternative converting constructor that takes only the object of the original class in its params. This will help to substitute the extension for the objects of the original class.
+	4. create new extended methods in the class. Move foreign methods from other classes to this class or else delete the foreign methods if their functionality is already  present in the extension
+	5. replace use of the utility class with the new extension class in places where its functionality is needed.
+
+		
+INTRODUCE NULL OBJECT=
+	1. From the class in question create a subclass that will perform the role of null object.
+	2. In both classes create the method isNull() which will return true for null object, false for real class
+	3. find all places where the code may return null instead of a real object. Change the code so it returns a null object.
+	4. find all places where the vars of the real class are compared with null. Replace these checks with a call for isNull().
+	5. If methods of the original class are run in these conditionals when a value does not equal null redefine these methods in the null class and insert the code from the else part of the condition there. Then you can delete the entire conditional and differing behaviour will be implemented via polymorphism.
+		
+INTRODUCE PARAM OBJECT=
+	1. Create new class that will represent your group of params. Make it immutable.
+	2. In the method you want to refactor use 
+		ADD PARAM=
+	In all method class pass the object created from old method params to this param.
+	3. Now start deleting old params from the method one by one, replacing them in the code with fields of the param object. Test program after each replacement.
+	4. When done see whether there is any point in moving a part of the method to a param object class. If so use Move method or extract method.		
+	
+MOVE FIELD - 
+	1. recreate the same field with access methods in new class
+	2. Create a get method to get the field in both classes.
+	3. Replace all references to the old field with calls to the methods in the new class.
+	4. delete field in original class	
+	
+MOVE METHOD =
+	1. verify all features used by old method in its class. May need to move them as well. And move any other methods that rely on the feature. Make sure method is not declared in superclasses or sub classes, if is don't move
+	2. declare the new method in the recipient class, mayb ewith more appropriate name given its new location
+	3. Make sure there ways to return the appropriate object. Turn old method into a reference to the new method.
+	4. Can you delete the old method entirely? If so, place a reference to the new method in all places that use the old one
+	
+PARAMETERISE METHOD=
+	1. Create a new method with a parameter and move it to the code that is the same for all classes by appling 	Extract method = 
+	2. in the code of the new method replace the special different value with a param.
+	3. For each old method , find the places where it is called, replacing these calls with calls  to the new method that include a param. Then delete the old method.
+	
+PRESERVE WHOLE OBJECT=
+	1. Create param in the method for the object from which you can get the necessary values
+	2. Now start removing the old params from the method one by one, replacing them with calls to the relevant methods of the param object.
+	3. Delete the getter code from the param object that had preceded the method call.
+
+PULL UP CONSTRUCTOR BODY=
+	1. create constructor in a superclass
+	2. Extract common code from the beginning of the constructor of each subclass to the superclass constructor. Before doing so try to move as much common code as possible to the beginning to the constructor.
+	3. Place the call for the superclass constructor in the first line in the subclass constructors.	
+	
+PULL UP FIELD=
+	1. make sure the fields are used fo the same needs in subclasses
+	2. if the fields have different names give them the same name and replace all references to the fields in existing code.
+	3. create a field with the same name in the superclass. Note that if the fields were private, the superclass field should be protected.
+	4. remove the fields from the subclasses
+
+PULL UP METHOD=
+	1. investigate similar methods in superclasses. if not identical tformat  then to match each other.
+	2. if methods use a different set of params put the params in the form that you want to see in the superclass
+	3. copy the method to the superclass. here you may find that the method code uses fields and methods that exist only in subclasses and therefore are not available in the superclass. To solve this PULL UP FIELD to create getters and setters in the subclasses, then declare these getters abstractly in the superclass, or use PULL UP METHOD
+	4. Remove the methods from the subclasses
+	5. check the locations in which the method is called. in some places you may be able to replace use of a subclass with the superclass.	
+	
+PUSH DOWN FIELD=
+	1. Declare field in all the necessary subclasses 
+	2. Remove the field from the superclass	
+	
+PUSH DOWN METHOD=
+	1. declare method in a subclass and copy its code from the superclass
+	2. Remove the method from the superclass.
+	3. Find all place where the method is used and verify that it is called from the necessary subclass.
+
+REMOVE MIDDLEMAN= 
+	1. create a getter for accessing the delegate class object from the server class object
+	2. replace calls to delegating methods in the server class with direct calls for the methods in the delegate class.
+	
+REMOVE PARAM =
+	1. see if method defined in superclass or subclass. If param is used dont refactor using this.
+	2. Create new method by copying old one and delete relevant param from it. Replace code with of old method with a call to the new one.
+	3. Find all references to old method and replace them with references to the new method.
+	4. Delete the old method. Dont perform this if old method is part of a public interface, just marks as deprecated.
+	
+REMOVE SETTING METHOD=
+	1. Value of a field should be changeable only in the constructor. If the constructor does not contain a param for setting the value, add one.
+	2. Find all setter calls. If setter call right after a call for the constructor of the currect class, move its argument to the construtor call and remove the setter. Replace setter calls in the constructor with direct access to the field.
+	3. Delte the setter.
+	
+RENAME METHODS=
+	1. See whether method defined in a superclass or subclass. If so repeat these step for all.
+	2. Create a new method with a new name. copy the code of the old method to it. Delete all the code in the old method, and instead of it, insert a call for the new method.
+	3. Find all references to the old method and replace them with references to the new one.
+	4. delete the old method. If the old method is part of a public interface, instead just mark it as deprecated and leave it.
+
+REPLACE ARRAY WITH OBJECT=
+	1. Create new class that will contain data from the array. Place array itself in the class as a public field.
+	2. Create field for storing the object of this class in the original class. Dont forget to also create the object itself in the place where you initiated the data array.
+	3. In new class create access methods one by one for each of the array elements. Give self explanatory names to show what they do. Also replace each use of array element with corresponding access method.
+	4. For each element of the array create a private method in the class and then change the access methods so that they use this field instead of the array.
+	5. Delete array	
+
+REPLACE CONDITIONAL WITH POLYMORPHISM=
+	1. If the conditional is a method that performs other actions as well perform EXTRACT METHOD=		
+	2. For each hierarchy subclass, redefine the method that contains the conditional and copy the code of the corresponding conditional branch to that location.
+	3. Delete that branch from the conditional.
+	4. Repeat replacement until all conditional empty, then delete conditional and  declare method abstract.
+	
+REPLACE DATA VALUE WITH OBJECT=
+	1. Create new class and copy field and relevant getter to it. Create constructor that accepts the simple value of the field.
+	2. In original class change field type to the new class.
+	3. In the getter in the original class, invoke the getter of the associated object.
+	4. In the setter create a new value object. May need to also create a new object in the constructor if initial values had been set there for the field previously. 
+	
+REPLACE DELEGATION WITH INHERITANCE=
+	1. make the class a subclass of the delegate class
+	2. place the current object in a field containing a reference to the delegate object
+	3. delete the methods with simple delegation one by one. If their names were different use RENAME METHOD to give all methods a single name.
+	4. replace all references to the delegate field with references to the current object
+	5. remove the delegate field
+	
+REPLACE INHERITANCE WITH DELEGATION=
+	1. create a field in the subclass for holding the superclass. During the initial stage place the current object in it.
+	2. Change the subclass methods so thst they use the superclass object instead of "this"
+	3. for methods inherited from the superclas that are called in client code create simple delegating methods in the subclass
+	4. remove the inheritance declaration from the subclass
+	5. Chnage the initialisation code o the field in which the former superclass is stored by creating a new object.
+	
+REPLACE METHOD WITH METHOD OBJECT =
+	1. create a new class with good name
+	2. In the new class create private field for storing reference to an instance of the class in which the method was previously located.
+	3. create a separate private field for each local var of the method.
+	4. Create a constructor to acceot as params the values of all local vars of the method and also initialises the corresponding private fields.
+	5. Declare the main method and copy the code of the original to it, replacing the local variables with private fields.
+	6. Replace the body of the original method in the original class by creating a method object and calling it's main method.
+	
+REPLACE PARAM WITH EXPLICIT METHODS=
+	1. for each variant of the method create a separate method. Run these methods based on the value of a param in the main method.
+	2. Find all the places the original method is called. In these places place a call for one of the new param dependant variants.
+	3. when no calls to the original method remain, delete it.
+	
+REPLACE PARAM WITH METHOD CALL= 
+	1. Make sure the value getting code doesnt use params from the current method since they will become unavailable from inside another method. If so cant move code.
+	2. If relevant code to complicated for a single method use EXTRACT METHOD to isolate code in new method and make the call simple/
+	3. in main method replace all referencces to the param being replaced with calls to the method that get sthe value
+	4. Use REMOVE PARAM to eliminate now unused param=
+
+REPLACE TYPE CODE WITH STRATEGY=
+	1. use SELF ENCAPSULATE FIELD to create a getter for the field that contains the type code=
+	2. Create new class with good name. This will be strategy class. In it create an abstract coded field getter.
+	3. Create subclass of te strategy class for each value of the coded type. In each subclass redefine the getter of the coded field so that it returns the corresponding value of the the coded type.
+	4. In abstract strategy class create a static factory method that accepts the value of the coded type as a param. Depending on the param the factory method will create objects of various strategies. This will have a conditional.
+	5. In the original class change the type of the coded field to the state class. In the fields setter call the factory strategy method for getting new strategy objects.
+	6. Now you can start to move the fields and methods from superclass down, using PUSH DOWN METHOD AND PUSH DOWN FIELD
+	7. When everything moveable has been moved use REPLACE CONDITIONAL WITH POLYMORPHISM=
+	
+SELF ENCAPSULATE FIELD=
+	1. create a getter (maybe setter) for the field. 
+	2. Find all direct invocations of the field and replace them with getter and setter calls
+	
+SUBSTITUTE ALGORITHM=
+	1. make sure that you have simplified the existing algorithm as much as possible. Move unimportant code to other methods using EXTRACT METHOD. The fewer moving parts the easier.
+	2. Create new algorithm in a new method. Replace the old algorithm with the new one and start testing the product.
+	3. If the results do not match, return to the old algorithm. Indentify cause of difference.
+	4. When all tests are successful, delete old algorithm.

@@ -1,0 +1,62 @@
+Design Patterns Question
+
+Focus on evaluating effectiveness of the use of patterns
+
+1. identify the design problem in the before
+2. state what pattern was used/missing/misused in the after code
+3. evaluate whether the pattern was appropriately applicable
+4. evaluate if the design problem was fixed
+5. suggest further improvements which are not in the code
+
+Marks = 
+1. Finding appropriate objects
+Are the objects that have been created the best choices?
+Do they represent real world objects or abstractions?
+Is it an abstraction you would create without the assistance of the design pattern?
+
+2. Determining object granularity
+What is the size of the objects before and after the pattern?
+Is it taking a big object and decomposing it into many smaller objects?
+
+3. Specifying object interfaces
+Can you substitute objects at run time with identical interfaces?
+What is the relationship between the interfaces? 
+Do some classes have to have similar interfaces?
+
+4. Specifying object implementation
+How is the object being implemented, instantiating an object of another class?
+Is the object being instantiated a subclass that is inheriting from a superclass, and is that subclass overriding superclass functions?
+
+5. Class vs Interface inheritance
+
+
+6. Programming to an interface, not an implementation
+
+7. Inheritance vs Composition
+
+8. Delegation
+
+9. Inheritance vs Parameterised types
+
+10. Relating runtime and compile time structures
+
+11. designing for change
+
+12. a common design vocab
+
+13. A documentation and learning aid
+
+14. An adjunct to existing methods
+
+15. A target for refactoring
+
+Extra marks = SOLID principles
+16. Single responsibility principles
+
+17. Open/closed principles
+
+18. Liskov substitution principles
+
+19.Interface segregation principles
+
+20. Dependency inversion principle
