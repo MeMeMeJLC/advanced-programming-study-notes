@@ -28,35 +28,87 @@ How is the object being implemented, instantiating an object of another class?
 Is the object being instantiated a subclass that is inheriting from a superclass, and is that subclass overriding superclass functions?
 
 5. Class vs Interface inheritance
-
+Does it use abstract classes, ie: interface inheritance? 
+How does the interface inheritance help?
+Or does it use class inheritance?
+How much does the design pattern insist on the interface?
 
 6. Programming to an interface, not an implementation
+Does it programme to an interface? 
+Does it therefore support polymorphism?
+Or is it just programming an implementation and therefore there is no room to vary the implementation without changing the guts of the code?
+Is the client aware of the implementation or just the interface?
+Is the actual implementation appropriately flexible?
 
 7. Inheritance vs Composition
-
+Does the design pattern use inheritance - classes? 
+Is functionality gained by subclassing? 
+	White-box reuse, because the internals of parent class is visible to subclass. Static, can't be changed at runtime. But is straightforward. Not encapsulated. But less objects
+Does it use composition - objects? 
+Is functionality gained by creating objects? 
+	blackbox because no internal details of object is visible, just interface. Can change implementation dynamically at runtime. Fewer implementation dependencies. more objects.
+	
 8. Delegation
+	The way to use composition like inheritance for reuse.
+	Is a Window being a Rectangle, or does it HAVE a rectangle (composition)? 
+	If it HAS A then it must explicitly forward requests to its rectangle. Rect is a delegate.
+	Easier to have different implementation at runtime, eg: Window could replace rect instance with circle instead.
+	But may be harder to understand, and runtime inefficiencies.
+	Delegation used by state, strategy
 
 9. Inheritance vs Parameterised types
+No parameterised types in python, so need to use inheritance or composition.
+If did have parameterised type would it be used in this pattern, eg list<string> or list<int>?
+But none of the patterns use parameterised types.
 
 10. Relating runtime and compile time structures
+Do they differ? They will where composition is used as depends on which object is instantiated.
+Is the runtime structure optimal? Does the code or pattern reveal the run time structure?
 
 11. designing for change
+Is the code able to be changed while staying robust?
+Or is there a risk of breaking it when it is changed, or require a major redesign?
+How much does the design pattern allow for change?
 
 12. a common design vocab
+How much does the design pattern help improve how you can describe the code?
+Can you talk about the code at a higher level of abstraction?
+Can the description be less dependant on a specific language?
 
 13. A documentation and learning aid
+How has the pattern improved the documentation for the code?
+How much easier is it to understand what the code is doing?
+Do you still need to reverse engineer? 
 
 14. An adjunct to existing methods
+Design pattern showing how to better use objects, inheritance, or polymorphism?
+Has it made the code more reusable?
+Still require analysis patterns, performance tuning patterns, UI design patterns. Design pattern is just one part.
 
 15. A target for refactoring
+How much has the design pattern decreased a reuirement for refactoring in the future if changes are made?
+Is the code now flexiable enough to avoid refactoring in the near future? 
 
 Extra marks = SOLID principles
 16. Single responsibility principles
+Do the classes only have one responsibility?
+Does only one potential change in spec affect the class?
 
 17. Open/closed principles
+Is the app open for extension, but closed for modification? 
 
 18. Liskov substitution principles
+Subtypes must be substitutable for there base types
+bird.duck and bird.goose are substitutable because they both have fly() operation, but bird.emu is not because it wouldn't have a fly() operation.
+Does the subclass introduce new behaviour into existing code that would require rewriting the parent class? and therefore violate open/closed princple.
+Do you need to modify code of the baseclass to allow a new subclass?
 
 19.Interface segregation principles
+Use small interfaces, not big ones
+classes using interfaces shouldn't be forced to use interfaces it doesn't need
 
 20. Dependency inversion principle
+High level modules should not depend on low level
+Don't depend on a concrete implementation, instead depend on an interface. Shouldnt need to know about each other, or set up factories.
+Abstractions should not depend on details, details should depend on abstractions
+
